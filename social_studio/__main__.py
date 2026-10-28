@@ -189,7 +189,10 @@ def cmd_batch(s, a):
     if not a.go:
         print("open it, then run the same command with --go to upload and schedule")
         return 0
-    rows = b.go(plan)
+    try:
+        rows = b.go(plan)
+    except PlanError as e:
+        sys.exit(str(e))
     print(f"queued {len(rows)} posts ({sum(r['status'] == 'reserve' for r in rows)} to the reserve)")
     return 0
 

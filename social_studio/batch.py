@@ -192,6 +192,9 @@ pre{{white-space:pre-wrap;font:inherit;font-size:.9em;margin:0}}</style></head><
 
     def go(self, plan: list[tuple[dict, datetime | None]]) -> list[dict]:
         """Upload and queue. Every post is qa_passed: a person looked at the preview first."""
+        if self.store.posts(account=f"eq.{self.acct.name}", batch_id=f"eq.{self.batch_id}", select="id", limit="1"):
+            raise PlanError(f"batch {self.batch_id} is already queued (from this PC or the other one); "
+                            "change the plan file to make a new batch")
         stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
         rows = []
         for e, at in plan:

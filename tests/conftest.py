@@ -43,6 +43,10 @@ class FakeStore:
         return sorted((r for r in self.rows.values() if r["account"] == account and r["status"] == "reserve"
                        and r["kind"] == kind), key=lambda r: r["created_at"])
 
+    def posts(self, account=None, batch_id=None, **_):
+        return [r for r in self.rows.values() if (account is None or f"eq.{r['account']}" == account)
+                and (batch_id is None or f"eq.{r.get('batch_id')}" == batch_id)]
+
     def used_refs(self, account):
         return {r["source_ref"] for r in self.rows.values() if r["account"] == account and r.get("source_ref")}
 

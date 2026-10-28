@@ -75,6 +75,9 @@ def test_preview_then_go(settings, store, now, tmp_path):
     assert [r["status"] for r in rows] == ["scheduled", "scheduled", "reserve"]
     assert all(r["qa_passed"] and r["caption_ok"] for r in rows) and rows[1]["source_ref"] == "pexels:2"
     assert rows[1]["caption"].endswith("Video by Bo on Pexels")
+    # Running --go again (e.g. from the other PC) is refused instead of queuing duplicates.
+    with pytest.raises(PlanError):
+        b2.go(b2.schedule(b2.build(), now))
 
 
 def test_pexels_needs_key(settings, store, tmp_path):

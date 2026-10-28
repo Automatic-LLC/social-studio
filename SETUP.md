@@ -10,8 +10,7 @@ Time: about 1 to 1.5 hours in total, mostly the Meta part.
 
 ## A. GitHub (5 min)
 
-1. **Rename the repo.** github.com/Automatic-LLC/IG-accts → Settings → General → Repository name: `social-studio`
-   → Rename. (Old links and `git pull` keep working; GitHub redirects.)
+1. ~~Rename the repo~~ to `social-studio`: done 2026-10-28.
 2. **Make it public.** Same page, bottom, Danger Zone → Change visibility → Public. It's safe: no keys are in the
    repo, and the `.gitignore` keeps `.env` files out. (Public also gives free, unlimited GitHub Actions minutes,
    which is what runs the publisher.)
@@ -69,7 +68,9 @@ doesn't happen. If it pauses before then, open the dashboard and click Restore.
 8. **Go Live.** Back in the app dashboard, switch App Mode from Development to **Live** (needs the privacy URL from
    step 4). Posting to your own accounts needs only Standard Access: no App Review.
 
-## E. ThinkPad: first check and first test post (15 min)
+## E. Each PC: first check and first test post (15 min)
+
+Do steps 1-3 on **both** the desktop and the ThinkPad (same secrets file on each); steps 4-6 only once.
 
 1. Install Python from python.org (tick "Add to PATH") if `py --version` doesn't work, and Git if needed.
 2. Get the code:
@@ -77,8 +78,9 @@ doesn't happen. If it pauses before then, open the dashboard and click Restore.
    cd C:\
    git clone https://github.com/Automatic-LLC/social-studio.git SocialStudio
    cd C:\SocialStudio
-   py -m pip install -r requirements.txt
+   setup.bat
    ```
+   Later, `pull.bat` gets the newest code on either PC.
 3. Make the secrets file: copy `.env.example` to `.env` in `C:\SocialStudio` (or save it as
    `C:\Trading\SocialStudio.env`, next to your trading keys) and fill in `META_TOKEN`, `SUPABASE_URL`,
    `SUPABASE_KEY`, `NTFY_TOPIC`. Notepad is fine. Never commit it (git ignores it).
@@ -95,6 +97,17 @@ doesn't happen. If it pauses before then, open the dashboard and click Restore.
    py -m social_studio test-post --account ur_dailydog --file C:\path\to\dog.jpg --caption "Monday mood 🐶" --yes
    ```
    It prints the post's link.
+
+## Two PCs (desktop + ThinkPad)
+
+- **Nothing posts from a PC.** GitHub runs the publisher and Supabase holds the queue, so both PCs see the same
+  queue and either can be off. `list`, `kill`, `add` and `batch` work the same from either.
+- **Code:** run `pull.bat` on a PC before working on it.
+- **Clips and plans:** keep each batch's plan file *and* its clips together in a synced folder (e.g.
+  `G:\My Drive\SocialStudio\week1\` with Google Drive for desktop), so either PC can run it. Paths in a plan are
+  relative to the plan file.
+- **Same batch twice is refused**, so running `--go` on the second PC can't double-post.
+- **The desktop** is the only one that does AI images/video later (GPU). Everything else runs on either.
 
 ## F. Turn on the automatic publisher (5 min)
 
