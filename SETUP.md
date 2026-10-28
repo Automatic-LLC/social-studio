@@ -1,153 +1,145 @@
-# Social Studio setup: Aaron's list
+# Social Studio setup: Aaron's checklist
 
-Everything here works from the ThinkPad; no GPU needed until the AI-video phase. Do the sections in order.
-**Never paste a token or key into a chat with Claude.** Put them in a password manager, the `.env` file and GitHub
-secrets only. The IDs that `doctor` prints (Page id, Instagram id) are not secret: those you can paste.
-
-Time: about 1 to 1.5 hours in total, mostly the Meta part.
+Tick each box as you go. Runs from the desktop **and** the ThinkPad; no GPU needed until the AI-video phase.
+**Never paste a secret into a chat with Claude** (Meta token, Supabase *secret* key, Pexels key). They go in your
+password manager, the `.env` file on each PC and GitHub secrets only. Safe to paste: the ID numbers `doctor` prints,
+the Supabase Project URL, the publishable key.
 
 ---
 
-## A. GitHub (5 min)
+## ✅ Done (Oct 28)
 
-1. ~~Rename the repo~~ to `social-studio`: done 2026-10-28.
-2. **Make it public.** Same page, bottom, Danger Zone → Change visibility → Public. It's safe: no keys are in the
-   repo, and the `.gitignore` keeps `.env` files out. (Public also gives free, unlimited GitHub Actions minutes,
-   which is what runs the publisher.)
-3. **Turn on the website.** Settings → Pages → Source: "Deploy from a branch" → Branch `main`, folder `/docs` → Save.
-   After a minute or two, check that these load:
-   - https://automatic-llc.github.io/social-studio/privacy.html
-   - https://automatic-llc.github.io/social-studio/data-deletion.html
-   Meta needs both links in section D.
+- [x] Repo renamed to `Automatic-LLC/social-studio` and made public
+- [x] Website live: https://automatic-llc.github.io/social-studio/privacy.html and `/data-deletion.html`
+- [x] Supabase project `social-studio` created; tables `posts`, `post_log` and the public `media` bucket set up
+      (Claude, through the "Superbase - Social Studio" connector)
+- [x] ntfy app installed and a topic picked
 
-## B. Supabase: a NEW project for Social Studio (10 min)
+---
 
-The Supabase project already connected to Claude belongs to your other business. Don't use it for this.
+## 1. Save the Supabase values (2 min) — now
 
-1. supabase.com → New project. Name `social-studio`, region: a US one near you, Free plan. Save the database
-   password in your password manager (we won't need it day to day).
-2. Left menu → **SQL Editor** → New query → paste all of `supabase/migrations/001_init.sql` from the repo → Run.
-   It should say "Success". This makes the `posts` and `post_log` tables and the `media` storage bucket.
-3. Left menu → **Storage**: check that a bucket called `media` exists and is marked **Public**.
-4. Left menu → **Project Settings → API Keys**: copy the **Project URL** and the **secret key** (`sb_secret_...`)
-   into your password manager. They become `SUPABASE_URL` and `SUPABASE_KEY`.
+- [ ] Supabase → social-studio project → **Project Settings → API Keys** → copy the **secret** key (`sb_secret_...`)
+      into your password manager. That is `SUPABASE_KEY`.
+- [ ] `SUPABASE_URL` is `https://slxgihuyzscnxoftxnqa.supabase.co` (not secret).
 
-Note: free projects pause after about a week with no activity. Once the publisher runs every 15 minutes, that
-doesn't happen. If it pauses before then, open the dashboard and click Restore.
+## 2. GitHub secrets (3 min) — now
 
-## C. Phone alerts (2 min)
+github.com/Automatic-LLC/social-studio → Settings → Secrets and variables → Actions → **Secrets** tab →
+New repository secret:
 
-1. Install the **ntfy** app (iPhone or Android).
-2. Tap + → subscribe to a topic with a long random name nobody would guess, e.g. `ur-dailydog-7f3k9q2x`
-   (anyone who knows the name can read the alerts). That name is `NTFY_TOPIC`.
+- [ ] `SUPABASE_URL`
+- [ ] `SUPABASE_KEY`
+- [ ] `NTFY_TOPIC` (your ntfy topic name)
+- [ ] `PEXELS_KEY` (after step 4)
+- [ ] Don't add `PUBLISHER_ON` yet (step 7).
 
-## D. Meta (30-45 min)
+## 3. Each PC: install and first check (15 min per PC) — now, on both PCs
 
-1. **Check the link.** business.facebook.com → Settings → Accounts → Instagram accounts: @ur_dailydog should be there
-   and connected to the dog Facebook Page. (Account type Business: already confirmed.)
-2. **Developer account.** developers.facebook.com → Get started, log in with the Facebook account that runs the
-   Page, verify your phone.
-3. **Create the app.** My Apps → Create app → use case **Other** → type **Business** → name `Social Studio` →
-   connect it to the business portfolio that owns the Page.
-4. **App settings → Basic:**
-   - Privacy Policy URL: `https://automatic-llc.github.io/social-studio/privacy.html`
-   - User data deletion: "Data deletion instructions URL" → `https://automatic-llc.github.io/social-studio/data-deletion.html`
-   - Category: anything close (e.g. "Entertainment"). Save changes.
-5. **Add products** (left menu → Add product): **Instagram** → choose "API setup with Facebook login", and
-   **Facebook Login for Business**.
-6. **System user (the never-expiring token).** business.facebook.com → Settings → Users → **System users** → Add →
-   name `social-studio-bot`, role **Admin**. Then on that system user → **Assign assets**:
-   - Apps → Social Studio → full control
-   - Pages → the dog Page → full control (or at least content and insights)
-   - Instagram accounts → @ur_dailydog → full control
-7. **Generate the token.** On the system user → Generate new token → app **Social Studio** → expiration **Never** →
-   tick these permissions:
-   `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`, `instagram_manage_comments`,
-   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `business_management`
-   → Generate → **copy it into your password manager right away** (Meta shows it once). This is `META_TOKEN`.
-8. **Go Live.** Back in the app dashboard, switch App Mode from Development to **Live** (needs the privacy URL from
-   step 4). Posting to your own accounts needs only Standard Access: no App Review.
+- [ ] Python from python.org (tick **Add to PATH**). Check: `py --version`
+- [ ] Git from git-scm.com. Check: `git --version`
+- [ ] ffmpeg: in PowerShell `winget install Gyan.FFmpeg`, close and reopen PowerShell. Check: `ffmpeg -version`
+- [ ] Get the code:
+      ```
+      cd C:\
+      git clone https://github.com/Automatic-LLC/social-studio.git SocialStudio
+      ```
+- [ ] Secrets file: copy `C:\SocialStudio\.env.example` to `C:\SocialStudio\.env` (or save it as
+      `C:\Trading\SocialStudio.env`) and fill in `SUPABASE_URL`, `SUPABASE_KEY`, `NTFY_TOPIC` (and `PEXELS_KEY`,
+      `META_TOKEN` when you have them). Notepad is fine. Same file on both PCs.
+- [ ] Double-click `C:\SocialStudio\setup.bat`. It installs everything and runs `doctor`, which should show
+      **OK Supabase: posts table reachable**. The Meta lines stay empty until step 6.
+- [ ] From now on, double-click `pull.bat` before working on a PC.
 
-## E. Each PC: first check and first test post (15 min)
+## 4. Pexels key (2 min) — now
 
-Do steps 1-3 on **both** the desktop and the ThinkPad (same secrets file on each); steps 4-6 only once.
+- [ ] pexels.com/api → sign up → copy the API key → `.env` on both PCs as `PEXELS_KEY=...`, and the GitHub secret.
 
-1. Install Python from python.org (tick "Add to PATH") if `py --version` doesn't work, and Git if needed.
-2. Get the code:
-   ```
-   cd C:\
-   git clone https://github.com/Automatic-LLC/social-studio.git SocialStudio
-   cd C:\SocialStudio
-   setup.bat
-   ```
-   Later, `pull.bat` gets the newest code on either PC.
-3. Make the secrets file: copy `.env.example` to `.env` in `C:\SocialStudio` (or save it as
-   `C:\Trading\SocialStudio.env`, next to your trading keys) and fill in `META_TOKEN`, `SUPABASE_URL`,
-   `SUPABASE_KEY`, `NTFY_TOPIC`. Notepad is fine. Never commit it (git ignores it).
-4. Run the check:
-   ```
-   py -m social_studio doctor
-   ```
-   It prints your Page id (`fb_page_id`) and Instagram id (`ig_user_id`). Put both in
-   `accounts/ur_dailydog.yaml`, or paste the two numbers to Claude and Claude will commit them.
-5. Run `doctor` again: it should end with "all good" and show your posting quota (e.g. "used 0 of 50").
-6. **First real post (Phase 1 done):** pick any dog photo you're happy to have on the page (it stays up unless you
-   delete it in the app):
-   ```
-   py -m social_studio test-post --account ur_dailydog --file C:\path\to\dog.jpg --caption "Monday mood 🐶" --yes
-   ```
-   It prints the post's link.
+## 5. Content to start with — anytime
 
-## Two PCs (desktop + ThinkPad)
+- [ ] In Google Drive make `SocialStudio\week1\` and put dog clips there that you own or have written permission
+      for (phone videos are perfect). Either PC can then run the batch.
+- [ ] Send Claude 2-3 phone screenshots of the profile and your best posts, plus any joke ideas. Claude drafts the
+      first week's plan (on-screen text and captions).
 
-- **Nothing posts from a PC.** GitHub runs the publisher and Supabase holds the queue, so both PCs see the same
-  queue and either can be off. `list`, `kill`, `add` and `batch` work the same from either.
-- **Code:** run `pull.bat` on a PC before working on it.
-- **Clips and plans:** keep each batch's plan file *and* its clips together in a synced folder (e.g.
-  `G:\My Drive\SocialStudio\week1\` with Google Drive for desktop), so either PC can run it. Paths in a plan are
-  relative to the plan file.
-- **Same batch twice is refused**, so running `--go` on the second PC can't double-post.
-- **The desktop** is the only one that does AI images/video later (GPU). Everything else runs on either.
+## 6. Meta (30-45 min) — tonight
 
-## F. Turn on the automatic publisher (5 min)
+1. - [ ] **Check the link.** business.facebook.com → Settings → Accounts → Instagram accounts: @ur_dailydog is there
+         and connected to the dog Facebook Page.
+2. - [ ] **Developer account.** developers.facebook.com → Get started → log in with the Facebook account that runs
+         the Page → verify your phone.
+3. - [ ] **Create the app.** My Apps → Create app → use case **Other** → type **Business** → name `Social Studio` →
+         connect it to the business portfolio that owns the Page.
+4. - [ ] **App settings → Basic:**
+         - Privacy Policy URL: `https://automatic-llc.github.io/social-studio/privacy.html`
+         - User data deletion → Data deletion instructions URL:
+           `https://automatic-llc.github.io/social-studio/data-deletion.html`
+         - Category: e.g. Entertainment → **Save changes**
+5. - [ ] **Add products** (left menu → Add product): **Instagram** → "API setup with Facebook login", and
+         **Facebook Login for Business**.
+6. - [ ] **System user.** business.facebook.com → Settings → Users → **System users** → Add → name
+         `social-studio-bot`, role **Admin**. Then **Assign assets**:
+         - Apps → Social Studio → full control
+         - Pages → the dog Page → full control
+         - Instagram accounts → @ur_dailydog → full control
+7. - [ ] **Token.** On the system user → Generate new token → app **Social Studio** → expiration **Never** → tick:
+         `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`, `instagram_manage_comments`,
+         `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `business_management`
+         → Generate → **copy it into your password manager right away** (shown once). That is `META_TOKEN`.
+8. - [ ] **Go Live.** App dashboard → App Mode: Development → **Live**.
+9. - [ ] Put `META_TOKEN=...` in `.env` on both PCs, and add it as a GitHub secret.
 
-1. github.com/Automatic-LLC/social-studio → Settings → Secrets and variables → Actions:
-   - **Secrets** tab → New repository secret, four times: `META_TOKEN`, `SUPABASE_URL`, `SUPABASE_KEY`, `NTFY_TOPIC`
-   - **Variables** tab → New repository variable: `PUBLISHER_ON` = `true`
-2. Actions tab → **publish** → Run workflow. It should finish green and say "{'posted': 0, ...}".
-3. **Phase 2 test:** queue a post for 30 minutes from now (account time, Central), close the laptop, and check the
-   page later:
-   ```
-   py -m social_studio add --account ur_dailydog --kind image --file dog2.jpg --caption "Caption that passes the rules 😂 Does yours do this? #dogsofinstagram #funnydogs #dogmemes" --at "2026-11-01 18:30"
-   py -m social_studio list --account ur_dailydog
-   ```
-   `add` refuses captions that break the rules and says why. `kill <id>` stops a post.
+## 7. First post and switch on (15 min) — tonight, one PC
 
-To stop everything at once: set `paused: true` in `config.yaml` (Claude can do it), or set `PUBLISHER_ON` to
-`false` in GitHub.
+- [ ] In `C:\SocialStudio`: `py -m social_studio doctor`. It prints your **fb_page_id** and **ig_user_id**: paste
+      the two numbers to Claude (Claude commits them), then `pull.bat`.
+- [ ] `doctor` again → ends with **all good** and shows your quota ("used 0 of 50").
+- [ ] **Test post** (stays on the page unless you delete it in the app):
+      ```
+      py -m social_studio test-post --account ur_dailydog --file C:\path\to\dog.jpg --caption "Monday mood 🐶" --yes
+      ```
+- [ ] GitHub → Settings → Secrets and variables → Actions → **Variables** tab → `PUBLISHER_ON` = `true`
+- [ ] GitHub → **Actions** tab → **publish** → Run workflow → it goes green.
+- [ ] `py -m social_studio profile --account ur_dailydog` → paste the report to Claude (no secrets in it).
+- [ ] **Hands-off test:** queue one post 30 min ahead (Central time), close the laptop, check the page later:
+      ```
+      py -m social_studio add --account ur_dailydog --kind image --file dog2.jpg --caption "Caption that passes the rules 😂 Does yours do this? #dogsofinstagram #funnydogs #dogmemes" --at "2026-10-29 18:30"
+      ```
 
-## G. Making Reels (ThinkPad is fine)
+## 8. First batch of Reels — after step 7
 
-1. **Install ffmpeg** (the video tool): open PowerShell and run `winget install Gyan.FFmpeg`, then close and reopen
-   PowerShell. `ffmpeg -version` should print a version.
-2. **Pexels key** (free stock clips): sign up at pexels.com/api → copy your API key into the `.env` file as
-   `PEXELS_KEY=...` (and later as a GitHub secret with the same name).
-3. **Make a batch:** copy `plans/example.yaml` to `plans/week1.yaml`, put your clips in `plans/clips/`, write the
-   on-screen text and captions (or ask Claude to draft them), then:
-   ```
-   py -m social_studio batch plans/week1.yaml
-   ```
-   It renders every Reel (9:16, your text on top, "Follow @ur_dailydog" end card) and uploads nothing yet. Open the
-   `preview.html` it prints, watch them, fix the plan if needed, then queue them into the next free daily slots:
-   ```
-   py -m social_studio batch plans/week1.yaml --go
-   ```
-   Extra Reels (or ones marked `reserve: true`) go to the reserve that fills killed or failed slots.
+- [ ] Copy `plans/example.yaml` into `SocialStudio\week1\week1.yaml` in Google Drive (or use Claude's draft) next to
+      the clips.
+- [ ] `py -m social_studio batch "G:\My Drive\SocialStudio\week1\week1.yaml"` → open the `preview.html` it prints
+      and watch every Reel.
+- [ ] Happy? Same command with `--go`: they go into the next free daily slots (6 pm), extras to the reserve.
+- [ ] `py -m social_studio list --account ur_dailydog` shows the queue; `py -m social_studio kill <id>` stops one.
 
-## H. Later (not needed yet)
+---
 
-- **Desktop (GPU)**: Ollama + ComfyUI install, for the AI phase (Claude will write the step list then).
-- **Higgsfield**: only if local AI video isn't good enough; pick monthly billing, cancel the trial if testing.
-- **Before the first contest**: read Meta's Promotion Guidelines page once.
-- **Keep posting by hand** (or with the free Business Suite scheduler) until the queue is running, so the account
-  doesn't go quiet.
+## Everyday commands
+
+| What | Command |
+|---|---|
+| Get the newest code | `pull.bat` |
+| Check everything is connected | `py -m social_studio doctor` |
+| See the queue | `py -m social_studio list --account ur_dailydog` |
+| Stop one post | `py -m social_studio kill <id>` |
+| Make and queue a batch of Reels | `py -m social_studio batch <plan.yaml>` then add `--go` |
+| What's working | `py -m social_studio profile --account ur_dailydog` |
+| Stop **everything** | GitHub variable `PUBLISHER_ON` = `false` (or ask Claude to set `paused: true`) |
+
+## Two PCs
+
+- Nothing posts from a PC: GitHub runs the publisher and Supabase holds the queue, so either PC can be off.
+- Same `.env` on both. Run `pull.bat` before working.
+- Keep each batch's plan file and its clips together in Google Drive so either PC can run it.
+- Queuing the same batch twice is refused, so `--go` on the second PC can't double-post.
+- Only the desktop does AI images/video later (GPU).
+
+## Later (not yet)
+
+- Ollama + ComfyUI on the desktop for the AI phase (Claude writes that list when we get there).
+- Higgsfield only if local AI video isn't good enough: monthly billing, cancel the trial if testing.
+- Before the first Dog of the Week: read Meta's Promotion Guidelines once.
+- Keep posting by hand (or with the free Business Suite scheduler) until the queue is running.

@@ -12,7 +12,8 @@ Rules that never bend:
 - Every AI-made post sets `is_ai` (Meta's AI label). No fake rescue or sad stories.
 - No post goes out unless `qa_passed` and `caption_ok`; `paused: true` in `config.yaml` stops everything.
 - All Meta calls stay in `social_studio/meta.py`.
-- Never use the Supabase project connected to Claude (it belongs to another business).
+- Supabase: use only the "Superbase - Social Studio" connector (project slxgihuyzscnxoftxnqa). The plain "Superbase"
+  connector is another business's project: never touch it.
 
 Git: work on `main` only, never create a branch (Aaron, 2026-10-28). Commit and push straight to `main`.
 

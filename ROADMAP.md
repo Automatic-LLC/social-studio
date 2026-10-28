@@ -5,7 +5,8 @@ where the build stands. Update it whenever something changes.
 
 ## Status (2026-10-28, evening)
 
-- **Phase 1 (foundation): code done, waiting on Aaron's setup** (SETUP.md A-E). Done when `test-post` puts one
+- **Phase 1 (foundation): code done; repo public, website live, Supabase set up (Oct 28). Waiting on Meta**
+  (SETUP.md steps 6-7). Done when `test-post` puts one
   image on @ur_dailydog.
 - **Phase 2 (publisher): core done** (GitHub Actions every 15 min, Instagram image/carousel/Reel/Story, Facebook
   Reels, reserve fills empty slots, phone alerts, daily queue check). Still to build: the batch preview page with
