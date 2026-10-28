@@ -1,0 +1,30 @@
+# Posts whatever is due, every 15 minutes. Off until the repo variable PUBLISHER_ON is "true"
+# (Settings > Secrets and variables > Actions > Variables), so it costs no minutes before setup is done.
+name: publish
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: publisher
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: vars.PUBLISHER_ON == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m social_studio publish-due
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}

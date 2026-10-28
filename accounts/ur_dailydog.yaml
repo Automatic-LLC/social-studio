@@ -1,0 +1,37 @@
+# @ur_dailydog: comedy dog page (some cute). Plan: Oct 26, 2026 growth & automation plan.
+
+handle: ur_dailydog
+enabled: true
+timezone: America/Chicago
+
+# Fill these after `py -m social_studio doctor` prints them (they are IDs, not secrets).
+ig_user_id: ""
+fb_page_id: ""
+token_env: META_TOKEN       # which secret holds this account's token
+
+# Every Reel also goes to the Facebook Page as a Facebook Reel.
+facebook_reels: true
+
+# Daily slots (local time). Reels every day; carousels on the listed weekdays.
+slots:
+  reel: "18:00"
+  carousel: "12:00"
+  carousel_days: [tue, thu, sat]
+
+captions:
+  min_words: 6
+  max_words: 20
+  min_emojis: 1
+  max_emojis: 2
+  min_hashtags: 3
+  max_hashtags: 5
+  banned: [pawsome, fur baby, furbaby, doggo, who's a good boy, pupper]
+
+hashtag_sets:
+  general: ["#dogsofinstagram", "#funnydogs", "#dogmemes", "#doglife"]
+  zoomies: ["#dogzoomies", "#zoomies", "#funnydogs"]
+  contest: ["#dogoftheweek", "#dogsofinstagram", "#funnydogs"]
+
+contest:
+  caption: "Dog of the Week: {dog} 🏆 via @{owner}"
+  cooldown_days: 90

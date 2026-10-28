@@ -1,0 +1,13 @@
+# secrets
+.env
+*.env
+!.env.example
+# runs and media
+out/
+media/
+batches/
+*.mp4
+*.mov
+__pycache__/
+.pytest_cache/
+*.pyc
