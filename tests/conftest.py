@@ -43,6 +43,16 @@ class FakeStore:
         return sorted((r for r in self.rows.values() if r["account"] == account and r["status"] == "reserve"
                        and r["kind"] == kind), key=lambda r: r["created_at"])
 
+    def used_refs(self, account):
+        return {r["source_ref"] for r in self.rows.values() if r["account"] == account and r.get("source_ref")}
+
+    def upload(self, local, path):
+        self.uploaded = getattr(self, "uploaded", []) + [path]
+        return self.public_url(path)
+
+    def add_post(self, row):
+        return self.add(**row)
+
     def update_post(self, post_id, **fields):
         self.rows[post_id].update(fields)
 

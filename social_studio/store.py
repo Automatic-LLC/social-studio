@@ -51,6 +51,11 @@ class Store:
         return self.posts(account=f"eq.{account}", status="eq.reserve", kind=f"eq.{kind}",
                           order="created_at.asc,id.asc")
 
+    def used_refs(self, account: str) -> set[str]:
+        """source_ref of every post the account ever queued (stock clips are never used twice)."""
+        rows = self.posts(account=f"eq.{account}", source_ref="not.is.null", select="source_ref", order="id.asc")
+        return {r["source_ref"] for r in rows}
+
     def add_post(self, row: dict) -> dict:
         r = self._req("POST", "/rest/v1/posts", json=row, headers={"Prefer": "return=representation"})
         return r.json()[0]

@@ -162,6 +162,13 @@ class Publisher:
                     out.append((kind, at))
         return out
 
+    def free_slots(self, acct, now: datetime, days: int, kind: str) -> list[datetime]:
+        """UTC times of the account's `kind` slots in the next `days` days whose local day has no such post yet."""
+        tz = ZoneInfo(acct.timezone)
+        taken = {_when(p["post_at"]).astimezone(tz).date()
+                 for p in self.store.taken(acct.name, now - timedelta(days=1)) if p["kind"] == kind}
+        return [at for k, at in self.slots(acct, now, days) if k == kind and at.astimezone(tz).date() not in taken]
+
     def fill_from_reserve(self, acct, now: datetime) -> int:
         """Put reserve posts into empty slots of the next reserve_days days (a killed or failed post's slot, or
         a queue that ran short). Returns how many were placed."""

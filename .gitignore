@@ -11,3 +11,8 @@ batches/
 __pycache__/
 .pytest_cache/
 *.pyc
+plans/clips/
+plans/vo/
+plans/music/
+*.wav
+*.mp3

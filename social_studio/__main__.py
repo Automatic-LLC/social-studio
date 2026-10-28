@@ -7,6 +7,7 @@
     py -m social_studio kill 42                     stop one post (a reserve post takes its slot)
     py -m social_studio publish-due                 what GitHub Actions runs every 15 minutes
     py -m social_studio check-queue                 the daily low-queue alarm
+    py -m social_studio batch plans/week1.yaml      render a plan's Reels + preview page (add --go to queue them)
 """
 from __future__ import annotations
 
@@ -45,7 +46,7 @@ def cmd_doctor(s, a):
     ok = True
     for name in config.SECRET_NAMES:
         have = bool(config.secret(name))
-        ok &= have or name == "NTFY_TOPIC"
+        ok &= have or name in ("NTFY_TOPIC", "PEXELS_KEY")
         print(f"  {'OK ' if have else '-- '} {name} {'set' if have else 'NOT SET'}")
     token = config.secret("META_TOKEN")
     if token:
@@ -167,6 +168,31 @@ def cmd_check_queue(s, a):
     return 0
 
 
+def cmd_batch(s, a):
+    from .batch import Batch, PlanError
+    plan_path = Path(a.plan)
+    if not plan_path.is_file():
+        sys.exit(f"no plan file {a.plan}")
+    import yaml
+    name = (yaml.safe_load(plan_path.read_text(encoding="utf-8")) or {}).get("account", "")
+    acct = _account(s, name)
+    try:
+        b = Batch(s, _store(s), acct, plan_path, Path(a.out), pexels_key=config.secret("PEXELS_KEY"),
+                  font=s.font or None)
+        entries = b.build()
+        plan = b.schedule(entries, datetime.now(timezone.utc))
+        page = b.preview(plan)
+    except PlanError as e:
+        sys.exit(f"plan problems:\n{e}")
+    print(f"preview: {page}")
+    if not a.go:
+        print("open it, then run the same command with --go to upload and schedule")
+        return 0
+    rows = b.go(plan)
+    print(f"queued {len(rows)} posts ({sum(r['status'] == 'reserve' for r in rows)} to the reserve)")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="social_studio")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -194,6 +220,10 @@ def main(argv=None) -> int:
     k.add_argument("id", type=int)
     sub.add_parser("publish-due")
     sub.add_parser("check-queue")
+    b = sub.add_parser("batch")
+    b.add_argument("plan")
+    b.add_argument("--go", action="store_true", help="upload and schedule (after checking the preview)")
+    b.add_argument("--out", default=str(config.ROOT / "out"))
     a = ap.parse_args(argv)
     s = config.load()
     return globals()["cmd_" + a.cmd.replace("-", "_")](s, a)

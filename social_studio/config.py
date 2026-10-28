@@ -13,7 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 ENV_FILES = [os.environ.get("SOCIAL_STUDIO_ENV", ""), str(ROOT / ".env"), r"C:\Trading\SocialStudio.env"]
-SECRET_NAMES = ("META_TOKEN", "SUPABASE_URL", "SUPABASE_KEY", "NTFY_TOPIC")
+SECRET_NAMES = ("META_TOKEN", "SUPABASE_URL", "SUPABASE_KEY", "NTFY_TOPIC", "PEXELS_KEY")
 
 
 def _read_env_file(path: str) -> dict[str, str]:
@@ -66,6 +66,7 @@ class Settings:
     media_bucket: str = "media"
     delete_media_after_post: bool = True
     ai_label_param: str = "is_ai_generated"
+    font: str = ""
     publisher: dict = field(default_factory=dict)
     queue: dict = field(default_factory=dict)
     accounts: dict[str, Account] = field(default_factory=dict)

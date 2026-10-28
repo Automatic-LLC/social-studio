@@ -1,0 +1,22 @@
+# Example batch plan. Copy it (e.g. plans/week1.yaml), put clips in plans/clips/ (git ignores video files),
+# then:  py -m social_studio batch plans/week1.yaml   (preview)   and again with --go (queue).
+account: ur_dailydog
+items:
+  - clip: clips/zoomies.mp4
+    text: "POV: you whispered the word 'walk' from 3 rooms away"
+    caption: "Corgi zoomies at 6am, every single day 😂 Does yours do this?"
+    hashtags: zoomies
+
+  - pexels: "golden retriever puppy running"
+    text: "Me when someone says my name in a different room"
+    caption: "Golden retriever puppy hearing his name, zero thoughts just vibes 🐕 What would yours do?"
+    hashtags: general
+
+  - clip: clips/biscuit.mp4
+    source: submission
+    credit: "@biscuits_owner"
+    text: "Rate this head tilt"
+    caption: "Biscuit the beagle, 9/10 for that head tilt 🐶 via @biscuits_owner"
+    hashtags: general
+    collab: [biscuits_owner]
+    reserve: true

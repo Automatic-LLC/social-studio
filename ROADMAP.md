@@ -3,14 +3,18 @@
 The plan: "ur_dailydog Growth & Automation Plan" (Oct 26, 2026). This file records what changed from that plan and
 where the build stands. Update it whenever something changes.
 
-## Status (2026-10-28)
+## Status (2026-10-28, evening)
 
 - **Phase 1 (foundation): code done, waiting on Aaron's setup** (SETUP.md A-E). Done when `test-post` puts one
   image on @ur_dailydog.
 - **Phase 2 (publisher): core done** (GitHub Actions every 15 min, Instagram image/carousel/Reel/Story, Facebook
   Reels, reserve fills empty slots, phone alerts, daily queue check). Still to build: the batch preview page with
   Kill/Swap buttons (today: `py -m social_studio kill <id>`). Done when a queued post goes out with the laptop shut.
-- Phases 3-6: not started.
+- **Phase 3 (content, no GPU): Reel maker in** (`social_studio/edit/reels.py`: 9:16, meme text on top, credit,
+  end card, voiceover and music mixing; `sources/pexels.py`; `batch.py`: plan file → renders → `preview.html` →
+  `--go` queues into free daily slots, extras to the reserve). Still to build: caption drafting by an LLM,
+  carousels (Pillow slides), a voice for voiceovers (Kokoro or Piper, both run on a CPU).
+- Phases 4-6: not started.
 
 ## Decisions (Aaron, 2026-10-28) and what they changed
 

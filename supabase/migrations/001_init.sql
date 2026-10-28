@@ -13,6 +13,7 @@ create table if not exists posts (
   source        text not null default 'own'
                 check (source in ('own', 'submission', 'pexels', 'ai', 'contest')),
   credit        text,                                -- owner handle or "Pexels: <name>"
+  source_ref    text,                                -- e.g. "pexels:123456", so a stock clip is never used twice
   is_ai         boolean not null default false,      -- true: Meta's AI label goes on
   qa_passed     boolean not null default false,      -- the publisher refuses posts without both checks
   caption_ok    boolean not null default false,
@@ -31,6 +32,7 @@ create table if not exists posts (
 );
 create index if not exists posts_due on posts (status, post_at);
 create index if not exists posts_account on posts (account, status);
+create index if not exists posts_source_ref on posts (account, source_ref);
 
 create table if not exists post_log (
   id      bigint generated always as identity primary key,

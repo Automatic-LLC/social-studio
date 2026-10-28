@@ -113,9 +113,26 @@ doesn't happen. If it pauses before then, open the dashboard and click Restore.
 To stop everything at once: set `paused: true` in `config.yaml` (Claude can do it), or set `PUBLISHER_ON` to
 `false` in GitHub.
 
-## G. Later (not needed yet)
+## G. Making Reels (ThinkPad is fine)
 
-- **Pexels API key** (free, pexels.com/api) for stock clips: Phase 3. Becomes `PEXELS_KEY`.
+1. **Install ffmpeg** (the video tool): open PowerShell and run `winget install Gyan.FFmpeg`, then close and reopen
+   PowerShell. `ffmpeg -version` should print a version.
+2. **Pexels key** (free stock clips): sign up at pexels.com/api → copy your API key into the `.env` file as
+   `PEXELS_KEY=...` (and later as a GitHub secret with the same name).
+3. **Make a batch:** copy `plans/example.yaml` to `plans/week1.yaml`, put your clips in `plans/clips/`, write the
+   on-screen text and captions (or ask Claude to draft them), then:
+   ```
+   py -m social_studio batch plans/week1.yaml
+   ```
+   It renders every Reel (9:16, your text on top, "Follow @ur_dailydog" end card) and uploads nothing yet. Open the
+   `preview.html` it prints, watch them, fix the plan if needed, then queue them into the next free daily slots:
+   ```
+   py -m social_studio batch plans/week1.yaml --go
+   ```
+   Extra Reels (or ones marked `reserve: true`) go to the reserve that fills killed or failed slots.
+
+## H. Later (not needed yet)
+
 - **Desktop (GPU)**: Ollama + ComfyUI install, for the AI phase (Claude will write the step list then).
 - **Higgsfield**: only if local AI video isn't good enough; pick monthly billing, cancel the trial if testing.
 - **Before the first contest**: read Meta's Promotion Guidelines page once.

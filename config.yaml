@@ -14,11 +14,15 @@ delete_media_after_post: true
 # before the first AI post goes out (SETUP.md, step 5).
 ai_label_param: is_ai_generated
 
+# Font for on-screen text. Empty: Impact on Windows, else a bold system font.
+font: ""
+
 publisher:
   max_attempts: 3            # a post that fails this many runs is marked failed and its slot goes to the reserve
   container_wait_seconds: 300  # how long to wait for Meta to finish processing a video before trying next run
   late_limit_hours: 6        # a post more than this late (PC off, GitHub outage) is skipped, not posted at a strange hour
 
 queue:
-  alarm_days: 14             # phone alert when the scheduled queue covers fewer days than this
+  horizon_days: 21           # a batch schedules up to this far ahead; anything more goes to the reserve
+  alarm_days: 14            # phone alert when the scheduled queue covers fewer days than this
   reserve_days: 3            # under this, empty slots start drawing from the reserve
