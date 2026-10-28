@@ -34,22 +34,27 @@ New repository secret:
 - [ ] `PEXELS_KEY` (after step 4)
 - [ ] Don't add `PUBLISHER_ON` yet (step 7).
 
-## 3. Each PC: install and first check (15 min per PC) — now, on both PCs
+## 3. Each PC: install with one double-click (10 min per PC) — now, on both PCs
 
-- [ ] Python from python.org (tick **Add to PATH**). Check: `py --version`
-- [ ] Git from git-scm.com. Check: `git --version`
-- [ ] ffmpeg: in PowerShell `winget install Gyan.FFmpeg`, close and reopen PowerShell. Check: `ffmpeg -version`
-- [ ] Get the code:
-      ```
-      cd C:\
-      git clone https://github.com/Automatic-LLC/social-studio.git SocialStudio
-      ```
-- [ ] Secrets file: copy `C:\SocialStudio\.env.example` to `C:\SocialStudio\.env` (or save it as
-      `C:\Trading\SocialStudio.env`) and fill in `SUPABASE_URL`, `SUPABASE_KEY`, `NTFY_TOPIC` (and `PEXELS_KEY`,
-      `META_TOKEN` when you have them). Notepad is fine. Same file on both PCs.
-- [ ] Double-click `C:\SocialStudio\setup.bat`. It installs everything and runs `doctor`, which should show
-      **OK Supabase: posts table reachable**. The Meta lines stay empty until step 6.
-- [ ] From now on, double-click `pull.bat` before working on a PC.
+No terminal needed. On each PC:
+
+- [ ] Open this link in the browser: **https://automatic-llc.github.io/social-studio/install.bat**. It downloads
+      `install.bat` (if the browser asks, choose **Keep**).
+- [ ] Double-click `install.bat` in your Downloads folder. If Windows says "Windows protected your PC", click
+      **More info → Run anyway** (it's our own file from our own website).
+- [ ] If it installs Python, Git or ffmpeg, it says so and asks you to **close the window and double-click
+      `install.bat` again**. Do that (once).
+- [ ] Notepad opens your secrets file (`.env`). Fill in `SUPABASE_URL`, `SUPABASE_KEY`, `NTFY_TOPIC` (and
+      `PEXELS_KEY` if you have it). Leave the others empty for now. **Save (Ctrl+S) and close Notepad.**
+- [ ] It runs the check and shows **OK Supabase: posts table reachable**. The Meta lines stay empty until step 6.
+      Then it opens the `C:\SocialStudio` folder.
+- [ ] From now on, double-click `pull.bat` in `C:\SocialStudio` before working on that PC.
+
+Later, to add a value to `.env` (like `META_TOKEN` tonight): open `C:\SocialStudio`, right-click `.env` →
+**Open with → Notepad**, add the line, save. If something fails, screenshot the window and send it to Claude.
+
+**Commands** (steps 7 and 8): in `C:\SocialStudio`, click the folder's address bar, type `cmd`, press Enter. A black
+window opens already in the right folder; paste the command there.
 
 ## 4. Pexels key (2 min) — now
 
