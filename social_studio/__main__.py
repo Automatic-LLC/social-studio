@@ -8,6 +8,7 @@
     py -m social_studio publish-due                 what GitHub Actions runs every 15 minutes
     py -m social_studio check-queue                 the daily low-queue alarm
     py -m social_studio batch plans/week1.yaml      render a plan's Reels + preview page (add --go to queue them)
+    py -m social_studio profile --account ur_dailydog   what has worked so far (writes out/profile-<account>.md)
 """
 from __future__ import annotations
 
@@ -193,6 +194,24 @@ def cmd_batch(s, a):
     return 0
 
 
+def cmd_profile(s, a):
+    from .insights import report
+    acct = _account(s, a.account)
+    if not acct.ig_user_id:
+        sys.exit(f"set ig_user_id in accounts/{acct.name}.yaml first (run doctor)")
+    m = Meta(acct.token, s.graph_version)
+    posts = m.media(acct.ig_user_id, limit=a.posts)
+    for p in posts:
+        p.update(m.media_insights(p["id"]))
+    text = report(m.profile(acct.ig_user_id), posts, acct.timezone)
+    out = Path(a.out) / f"profile-{acct.name}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text, encoding="utf-8")
+    print(text)
+    print(f"saved to {out} (paste it to Claude: it holds no secrets)")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="social_studio")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -220,6 +239,10 @@ def main(argv=None) -> int:
     k.add_argument("id", type=int)
     sub.add_parser("publish-due")
     sub.add_parser("check-queue")
+    pr = sub.add_parser("profile")
+    pr.add_argument("--account", required=True)
+    pr.add_argument("--posts", type=int, default=60)
+    pr.add_argument("--out", default=str(config.ROOT / "out"))
     b = sub.add_parser("batch")
     b.add_argument("plan")
     b.add_argument("--go", action="store_true", help="upload and schedule (after checking the preview)")

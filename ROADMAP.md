@@ -14,6 +14,8 @@ where the build stands. Update it whenever something changes.
   end card, voiceover and music mixing; `sources/pexels.py`; `batch.py`: plan file → renders → `preview.html` →
   `--go` queues into free daily slots, extras to the reserve). Still to build: caption drafting by an LLM,
   carousels (Pillow slides), a voice for voiceovers (Kokoro or Piper, both run on a CPU).
+- `py -m social_studio profile --account ur_dailydog`: what has worked so far, from Meta's API (Instagram
+  blocks reading the profile page without a login, so this is how Claude sees the account).
 - Phases 4-6: not started.
 
 ## Decisions (Aaron, 2026-10-28) and what they changed

@@ -53,6 +53,37 @@ class Meta:
         out = self._get(f"{ig_user_id}/content_publishing_limit", fields="quota_usage,config")
         return (out.get("data") or [{}])[0]
 
+    # -- reading our own account -----------------------------------------------------------------------------
+    def profile(self, ig_user_id: str) -> dict:
+        return self._get(ig_user_id, fields="username,name,biography,website,followers_count,follows_count,"
+                                            "media_count")
+
+    def media(self, ig_user_id: str, limit: int = 50) -> list[dict]:
+        """Our latest posts, newest first (follows paging until `limit`)."""
+        fields = "id,caption,media_type,media_product_type,timestamp,permalink,like_count,comments_count"
+        out = self._get(f"{ig_user_id}/media", fields=fields, limit=min(limit, 50))
+        items = list(out.get("data", []))
+        after = (out.get("paging") or {}).get("cursors", {}).get("after")
+        while after and len(items) < limit and (out.get("paging") or {}).get("next"):
+            out = self._get(f"{ig_user_id}/media", fields=fields, limit=min(limit - len(items), 50), after=after)
+            items += out.get("data", [])
+            after = (out.get("paging") or {}).get("cursors", {}).get("after")
+        return items[:limit]
+
+    def media_insights(self, media_id: str, metrics=("views", "reach", "saved", "shares", "total_interactions")) -> dict:
+        """{metric: value} for one post; metrics Meta refuses for that post type are left out."""
+        try:
+            out = self._get(f"{media_id}/insights", metric=",".join(metrics))
+        except http.HttpError:
+            if len(metrics) == 1:
+                return {}
+            got: dict = {}
+            for m in metrics:  # one at a time, so one unsupported metric doesn't hide the rest
+                got.update(self.media_insights(media_id, (m,)))
+            return got
+        return {d["name"]: (d.get("values") or [{}])[0].get("value", d.get("total_value", {}).get("value"))
+                for d in out.get("data", [])}
+
     # -- Instagram -------------------------------------------------------------------------------------------
     def container(self, ig_user_id: str, *, kind: str, url: str | None = None, caption: str | None = None,
                   children: list[str] | None = None, carousel_item: bool = False,
