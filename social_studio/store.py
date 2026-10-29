@@ -17,11 +17,22 @@ def iso(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def clean_url(url: str) -> str:
+    """The project URL as Supabase shows it, forgiving common paste slips ("https:https://...", "/rest/v1", spaces)."""
+    url = url.strip().strip('"').rstrip("/")
+    i = url.rfind("https://")
+    url = url[i:] if i > 0 else url
+    for tail in ("/rest/v1", "/storage/v1"):
+        if url.endswith(tail):
+            url = url[: -len(tail)]
+    return url
+
+
 class Store:
     def __init__(self, url: str, key: str, bucket: str = "media", session=None):
         if not url or not key:
             raise RuntimeError("SUPABASE_URL / SUPABASE_KEY not set; see SETUP.md")
-        self.url = url.rstrip("/")
+        self.url = clean_url(url)
         self.bucket = bucket
         self.session = session
         # New-style keys (sb_secret_...) go in apikey only; legacy JWT keys also need the Bearer header.
