@@ -96,41 +96,75 @@ window opens already in the right folder; paste the command there.
 
 ## 7. First post and switch on (15 min) — tonight, one PC
 
-- [ ] In `C:\SocialStudio`: `py -m social_studio doctor`. It prints your **fb_page_id** and **ig_user_id**: paste
-      the two numbers to Claude (Claude commits them), then `pull.bat`.
-- [ ] `doctor` again → ends with **all good** and shows your quota ("used 0 of 50").
-- [ ] **Test post** (stays on the page unless you delete it in the app):
+Open **cmd**: press the Windows key, type `cmd`, press Enter. Paste each command, press Enter after each line.
+
+- [ ] Check the setup and get your two IDs:
       ```
-      py -m social_studio test-post --account ur_dailydog --file C:\path\to\dog.jpg --caption "Monday mood 🐶" --yes
+      cd /d C:\SocialStudio
+      py -m social_studio doctor
+      ```
+      It prints **fb_page_id** and **ig_user_id**: paste the two numbers to Claude (Claude commits them). Then:
+      ```
+      cd /d C:\SocialStudio
+      git pull origin main
+      py -m social_studio doctor
+      ```
+      It should end with **all good** and show your quota ("used 0 of 50").
+- [ ] **Test post** (stays on the page unless you delete it in the app). Put a dog photo at `C:\SocialStudio\test.jpg`
+      first, then:
+      ```
+      cd /d C:\SocialStudio
+      py -m social_studio test-post --account ur_dailydog --file C:\SocialStudio\test.jpg --caption "Monday mood 🐶" --yes
       ```
 - [ ] GitHub → Settings → Secrets and variables → Actions → **Variables** tab → `PUBLISHER_ON` = `true`
 - [ ] GitHub → **Actions** tab → **publish** → Run workflow → it goes green.
-- [ ] `py -m social_studio profile --account ur_dailydog` → paste the report to Claude (no secrets in it).
-- [ ] **Hands-off test:** queue one post 30 min ahead (Central time), close the laptop, check the page later:
+- [ ] What has worked so far (paste the report to Claude; no secrets in it):
       ```
-      py -m social_studio add --account ur_dailydog --kind image --file dog2.jpg --caption "Caption that passes the rules 😂 Does yours do this? #dogsofinstagram #funnydogs #dogmemes" --at "2026-10-29 18:30"
+      cd /d C:\SocialStudio
+      py -m social_studio profile --account ur_dailydog
+      ```
+- [ ] **Hands-off test:** put a second photo at `C:\SocialStudio\test2.jpg`, change the date and time to about 30
+      minutes from now (Central time), close the laptop, check the page later:
+      ```
+      cd /d C:\SocialStudio
+      py -m social_studio add --account ur_dailydog --kind image --file C:\SocialStudio\test2.jpg --caption "Caption that passes the rules 😂 Does yours do this? #dogsofinstagram #funnydogs #dogmemes" --at "2026-10-29 21:30"
+      py -m social_studio list --account ur_dailydog
       ```
 
 ## 8. First batch of Reels — after step 7
 
-- [ ] Copy `plans/example.yaml` into `SocialStudio\week1\week1.yaml` in Google Drive (or use Claude's draft) next to
-      the clips.
-- [ ] `py -m social_studio batch "G:\My Drive\SocialStudio\week1\week1.yaml"` → open the `preview.html` it prints
-      and watch every Reel.
-- [ ] Happy? Same command with `--go`: they go into the next free daily slots (6 pm), extras to the reserve.
-- [ ] `py -m social_studio list --account ur_dailydog` shows the queue; `py -m social_studio kill <id>` stops one.
+- [ ] Make the folder `G:\My Drive\SocialStudio\week1\` in Google Drive, put the clips in it, and copy the example
+      plan there (or use Claude's draft):
+      ```
+      copy C:\SocialStudio\plans\example.yaml "G:\My Drive\SocialStudio\week1\week1.yaml"
+      notepad "G:\My Drive\SocialStudio\week1\week1.yaml"
+      ```
+- [ ] Render and preview (nothing uploads yet); open the `preview.html` it prints and watch every Reel:
+      ```
+      cd /d C:\SocialStudio
+      py -m social_studio batch "G:\My Drive\SocialStudio\week1\week1.yaml"
+      ```
+- [ ] Happy? Queue them into the next free daily slots (6 pm), extras to the reserve:
+      ```
+      cd /d C:\SocialStudio
+      py -m social_studio batch "G:\My Drive\SocialStudio\week1\week1.yaml" --go
+      py -m social_studio list --account ur_dailydog
+      ```
 
 ---
 
-## Everyday commands
+## Everyday commands (cmd)
+
+Always start with `cd /d C:\SocialStudio`, then:
 
 | What | Command |
 |---|---|
-| Get the newest code | `pull.bat` |
+| Get the newest code | `git pull origin main` (or double-click `pull.bat`) |
 | Check everything is connected | `py -m social_studio doctor` |
 | See the queue | `py -m social_studio list --account ur_dailydog` |
-| Stop one post | `py -m social_studio kill <id>` |
-| Make and queue a batch of Reels | `py -m social_studio batch <plan.yaml>` then add `--go` |
+| Stop one post (number from `list`) | `py -m social_studio kill 42` |
+| Make a batch of Reels (preview) | `py -m social_studio batch "G:\My Drive\SocialStudio\week1\week1.yaml"` |
+| Queue that batch | the same command with ` --go` at the end |
 | What's working | `py -m social_studio profile --account ur_dailydog` |
 | Stop **everything** | GitHub variable `PUBLISHER_ON` = `false` (or ask Claude to set `paused: true`) |
 

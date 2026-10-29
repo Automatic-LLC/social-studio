@@ -15,6 +15,9 @@ Rules that never bend:
 - Supabase: use only the "Superbase - Social Studio" connector (project slxgihuyzscnxoftxnqa). The plain "Superbase"
   connector is another business's project: never touch it.
 
+How Aaron works (Aaron, 2026-10-29): he uses **cmd** (Command Prompt) on Windows. Always give full, copy-paste
+commands, one per line, starting with `cd /d C:\SocialStudio` (never a bare `py -m ...`), and say where to type them.
+
 Git: work on `main` only, never create a branch (Aaron, 2026-10-28). Commit and push straight to `main`.
 
 Tests: `py -m pytest -q` (Linux: `python -m pytest -q`). When something changes, update `ROADMAP.md`.
