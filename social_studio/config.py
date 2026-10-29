@@ -13,7 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 ENV_FILES = [os.environ.get("SOCIAL_STUDIO_ENV", ""), str(ROOT / ".env"), r"C:\Trading\SocialStudio.env"]
-SECRET_NAMES = ("META_TOKEN", "SUPABASE_URL", "SUPABASE_KEY", "NTFY_TOPIC", "PEXELS_KEY")
+SECRET_NAMES = ("META_TOKEN", "MAKE_WEBHOOK_URL", "SUPABASE_URL", "SUPABASE_KEY", "NTFY_TOPIC", "PEXELS_KEY")
 
 
 def _read_env_file(path: str) -> dict[str, str]:
@@ -48,6 +48,8 @@ class Account:
     ig_user_id: str = ""
     fb_page_id: str = ""
     token_env: str = "META_TOKEN"
+    publish_via: str = "meta"           # meta: our own Meta app; make: a Make.com scenario (see make.py)
+    make_webhook_env: str = "MAKE_WEBHOOK_URL"
     facebook_reels: bool = True
     slots: dict = field(default_factory=dict)
     captions: dict = field(default_factory=dict)
@@ -57,6 +59,10 @@ class Account:
     @property
     def token(self) -> str:
         return secret(self.token_env)
+
+    @property
+    def make_url(self) -> str:
+        return secret(self.make_webhook_env)
 
 
 @dataclass

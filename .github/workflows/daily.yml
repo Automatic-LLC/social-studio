@@ -21,6 +21,7 @@ jobs:
       - run: python -m social_studio check-queue
         env:
           META_TOKEN: ${{ secrets.META_TOKEN }}
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}

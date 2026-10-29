@@ -47,6 +47,10 @@ class FakeStore:
         return [r for r in self.rows.values() if (account is None or f"eq.{r['account']}" == account)
                 and (batch_id is None or f"eq.{r.get('batch_id')}" == batch_id)]
 
+    def posted_with_media(self, account, before, after):
+        return [r for r in self.rows.values() if r["account"] == account and r["status"] == "posted"
+                and r.get("media") and after <= _when(r["posted_at"]) < before]
+
     def used_refs(self, account):
         return {r["source_ref"] for r in self.rows.values() if r["account"] == account and r.get("source_ref")}
 

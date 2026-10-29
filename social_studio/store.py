@@ -67,6 +67,11 @@ class Store:
         rows = self.posts(account=f"eq.{account}", source_ref="not.is.null", select="source_ref", order="id.asc")
         return {r["source_ref"] for r in rows}
 
+    def posted_with_media(self, account: str, before: datetime, after: datetime) -> list[dict]:
+        rows = self.posts(account=f"eq.{account}", status="eq.posted", select="id,media",
+                          **{"and": f"(posted_at.lt.{iso(before)},posted_at.gte.{iso(after)})"})
+        return [r for r in rows if r.get("media")]
+
     def add_post(self, row: dict) -> dict:
         r = self._req("POST", "/rest/v1/posts", json=row, headers={"Prefer": "return=representation"})
         return r.json()[0]

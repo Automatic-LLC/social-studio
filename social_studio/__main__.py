@@ -5,6 +5,7 @@
     py -m social_studio add --account ur_dailydog --kind reel --file clip.mp4 --caption "..." --at "2026-11-02 18:00"
     py -m social_studio list --account ur_dailydog  upcoming queue
     py -m social_studio kill 42                     stop one post (a reserve post takes its slot)
+    py -m social_studio make-sample --account ur_dailydog   teach a new Make.com scenario our post fields
     py -m social_studio publish-due                 what GitHub Actions runs every 15 minutes
     py -m social_studio check-queue                 the daily low-queue alarm
     py -m social_studio batch plans/week1.yaml      render a plan's Reels + preview page (add --go to queue them)
@@ -20,6 +21,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from . import captions, config, http, notify
+from .make import MakeError, MakeHook
 from .meta import Meta, MetaError
 from .publisher import Publisher
 from .store import Store
@@ -31,6 +33,11 @@ def _store(s) -> Store:
 
 def _metas(s) -> dict[str, Meta]:
     return {a.name: Meta(a.token, s.graph_version) for a in s.accounts.values() if a.token}
+
+
+def _hooks(s) -> dict[str, MakeHook]:
+    return {a.name: MakeHook(a.make_url) for a in s.accounts.values()
+            if a.publish_via == "make" and a.make_url.startswith("https://")}
 
 
 def _alert(title, message, priority="default"):
@@ -45,12 +52,17 @@ def _account(s, name):
 
 def cmd_doctor(s, a):
     ok = True
-    why = {"META_TOKEN": "needed to post (SETUP.md step 6)", "SUPABASE_URL": "needed: the post queue",
+    via_make = any(a.publish_via == "make" for a in s.accounts.values())
+    via_meta = any(a.publish_via != "make" for a in s.accounts.values())
+    why = {"META_TOKEN": "needed to post (SETUP.md step 6)" if via_meta else "optional: only for the profile stats",
+           "MAKE_WEBHOOK_URL": "needed to post (posting goes through Make)" if via_make
+           else "optional: only if posting goes through Make.com",
+           "SUPABASE_URL": "needed: the post queue",
            "SUPABASE_KEY": "needed: the post queue", "NTFY_TOPIC": "optional: phone alerts",
            "PEXELS_KEY": "optional: only for stock clips"}
     for name in config.SECRET_NAMES:
         have = bool(config.secret(name))
-        ok &= have or name in ("NTFY_TOPIC", "PEXELS_KEY")
+        ok &= have or not why[name].startswith("needed")
         print(f"  {'OK ' if have else '-- '} {name} {'set' if have else 'not set yet: ' + why[name]}")
     token = config.secret("META_TOKEN")
     if token:
@@ -98,6 +110,8 @@ def _upload(store: Store, acct, files: list[str]) -> list[dict]:
 
 def cmd_test_post(s, a):
     acct = _account(s, a.account)
+    if acct.publish_via == "make":
+        return _test_post_make(s, a, acct)
     if not acct.ig_user_id:
         sys.exit(f"set ig_user_id in accounts/{acct.name}.yaml first (run doctor)")
     print(f"This posts {a.file} to @{acct.handle} on Instagram for real, with caption: {a.caption!r}")
@@ -114,6 +128,40 @@ def cmd_test_post(s, a):
     mid = meta.publish(acct.ig_user_id, c)
     print(f"posted: {meta.permalink(mid) or mid}")
     store.delete_media([media[0]["path"]])
+    return 0
+
+
+def _test_post_make(s, a, acct):
+    print(f"This posts {a.file} to @{acct.handle} for real, through Make, with caption: {a.caption!r}")
+    if not a.yes:
+        print("add --yes to post it")
+        return 1
+    hook, store = MakeHook(acct.make_url), _store(s)
+    media = _upload(store, acct, [a.file])
+    url = store.public_url(media[0]["path"])
+    kind = "reel" if Path(a.file).suffix.lower() in (".mp4", ".mov") else "image"
+    try:
+        reply = hook.post({"post_id": 0, "account": acct.name, "handle": acct.handle, "kind": kind,
+                           "caption": a.caption, "media_url": url, "media_urls": [url], "is_ai": False,
+                           "collaborators": [], "to_facebook": False, "sample": False})
+    except (MakeError, http.HttpError) as e:
+        sys.exit(f"Make said: {http.scrub(str(e))}")
+    print(f"sent to Make; reply: {reply or 'Accepted'} (check the page in a minute)")
+    return 0
+
+
+def cmd_make_sample(s, a):
+    """Teach a new Make scenario what our posts look like. Run it BEFORE adding the Instagram modules."""
+    acct = _account(s, a.account)
+    try:
+        MakeHook(acct.make_url).post({
+            "post_id": 1, "account": acct.name, "handle": acct.handle, "kind": "reel",
+            "caption": "Sample caption 🐶 #dogsofinstagram #funnydogs #dogmemes",
+            "media_url": "https://example.com/sample.mp4", "media_urls": ["https://example.com/sample.mp4"],
+            "is_ai": False, "collaborators": [], "to_facebook": True, "sample": True})
+    except (MakeError, http.HttpError) as e:
+        sys.exit(f"Make said: {http.scrub(str(e))}")
+    print("sample sent: Make should now show 'Successfully determined' on the webhook")
     return 0
 
 
@@ -157,10 +205,11 @@ def cmd_kill(s, a):
 
 
 def cmd_publish_due(s, a):
-    if not (config.secret("SUPABASE_URL") and config.secret("SUPABASE_KEY") and config.secret("META_TOKEN")):
+    metas, hooks = _metas(s), _hooks(s)
+    if not (config.secret("SUPABASE_URL") and config.secret("SUPABASE_KEY") and (metas or hooks)):
         print("not set up yet (secrets missing): nothing to do")
         return 0
-    print(Publisher(s, _store(s), _metas(s), _alert).run())
+    print(Publisher(s, _store(s), metas, _alert, hooks=hooks).run())
     return 0
 
 
@@ -243,6 +292,8 @@ def main(argv=None) -> int:
     li.add_argument("--account", required=True)
     k = sub.add_parser("kill")
     k.add_argument("id", type=int)
+    ms = sub.add_parser("make-sample")
+    ms.add_argument("--account", required=True)
     sub.add_parser("publish-due")
     sub.add_parser("check-queue")
     pr = sub.add_parser("profile")

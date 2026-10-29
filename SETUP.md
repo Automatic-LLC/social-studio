@@ -98,6 +98,54 @@ Pexels paused new API keys (Oct 2026), so skip `PEXELS_KEY`. To use a stock clip
 8. - [ ] **Go Live.** App dashboard → App Mode: Development → **Live**.
 9. - [ ] Put `META_TOKEN=...` in `.env` on both PCs, and add it as a GitHub secret.
 
+## 6B. If Meta's phone check won't let you in: post through Make.com instead (20 min)
+
+Make.com is already approved by Meta, so this needs **no Meta developer account and no text message**. You lose
+only the `profile` stats (they need the developer account; add it later if the phone check ever works).
+Needs: a Facebook **Page** linked to @ur_dailydog (business.facebook.com/settings → Accounts → Pages). Make's
+screens change now and then; if a name differs, pick the closest one or send Claude a screenshot.
+
+1. - [ ] **make.com** → Sign up (free plan; Google sign-in is fine).
+2. - [ ] **Scenarios → Create a new scenario** → click the big **+** → search **Webhooks** → **Custom webhook** →
+         **Add** → name `social-studio` → **Save** → **Copy address to clipboard**.
+3. - [ ] Put it in `.env` and in GitHub:
+         ```
+         notepad C:\SocialStudio\.env
+         ```
+         Paste after `MAKE_WEBHOOK_URL=`, save. GitHub → Settings → Secrets and variables → Actions → New
+         repository secret → name `MAKE_WEBHOOK_URL`, value: the same address.
+4. - [ ] Make now says it's listening. Teach it what our posts look like (this does **not** post anything):
+         ```
+         cd /d C:\SocialStudio
+         git pull origin main
+         py -m social_studio make-sample --account ur_dailydog
+         ```
+         Make shows **Successfully determined**.
+5. - [ ] Click the **+** after the webhook → **Router** (it splits into two paths).
+6. - [ ] **Top path (Reels):** click its **+** → **Instagram for Business → Create a Reel Post** →
+         **Create a connection** → log in with Facebook as **Aaron Bowers** → allow everything → pick
+         @ur_dailydog. Fill the fields by clicking the items from the webhook: **Video URL** = `media_url`,
+         **Caption** = `caption`. OK.
+7. - [ ] **Bottom path (photos):** **+** → **Instagram for Business → Create a Photo Post** → same connection →
+         **Photo URL** = `media_url`, **Caption** = `caption`. OK.
+8. - [ ] **Filters** (click the dotted line before each Instagram module → **Set up a filter**):
+         - Reels path: `kind` **Equal to** `reel`, AND `sample` **Equal to** `false`
+         - Photos path: `kind` **Equal to** `image`, AND `sample` **Equal to** `false`
+9. - [ ] Optional but better: after each Instagram module add **Webhooks → Webhook response**: Status `200`,
+         Body `{"id": "<click the ID from the Instagram module>"}`. Then our log shows the post ID.
+10. - [ ] **Save** (bottom), switch the scenario **ON**, schedule **Immediately as data arrives**.
+11. - [ ] Tell Claude "switch to Make". Claude sets `publish_via: make` for the account and pushes. Then:
+         ```
+         cd /d C:\SocialStudio
+         git pull origin main
+         py -m social_studio doctor
+         py -m social_studio test-post --account ur_dailydog --file C:\SocialStudio\test.jpg --caption "Monday mood 🐶" --yes
+         ```
+         The photo appears on the page within a minute. Then continue with step 7 below (skip the ID lines).
+
+**Plan C (no setup at all):** make Reels with `batch` (step 8) and upload them yourself once a week in
+**Meta Business Suite → Planner** (free, about 15 min for 7 posts). Good for while either route gets sorted.
+
 ## 7. First post and switch on (15 min) — tonight, one PC
 
 Open **cmd**: press the Windows key, type `cmd`, press Enter. Paste each command, press Enter after each line.

@@ -13,6 +13,7 @@ from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from . import http
+from .make import MakeError, MakeHook
 from .meta import Meta, MetaError
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
@@ -23,11 +24,21 @@ def _when(s: str) -> datetime:
 
 
 class Publisher:
-    def __init__(self, settings, store, metas: dict[str, Meta], alert=lambda *a, **k: None):
+    def __init__(self, settings, store, metas: dict[str, Meta], alert=lambda *a, **k: None,
+                 hooks: dict[str, MakeHook] | None = None):
         self.s = settings
         self.store = store
         self.metas = metas
+        self.hooks = hooks or {}
         self.alert = alert
+
+    def ready(self, acct) -> bool:
+        """The account is on and has what its posting route needs."""
+        if not acct.enabled:
+            return False
+        if acct.publish_via == "make":
+            return acct.name in self.hooks
+        return bool(acct.ig_user_id) and acct.name in self.metas
 
     # -- one run -----------------------------------------------------------------------------------------------
     def run(self, now: datetime | None = None) -> dict:
@@ -37,8 +48,10 @@ class Publisher:
             print("paused (config.yaml): nothing posts")
             return out
         for acct in self.s.accounts.values():
-            if acct.enabled and acct.ig_user_id:
+            if self.ready(acct):
                 out["filled"] += self.fill_from_reserve(acct, now)
+                if acct.publish_via == "make":
+                    self.cleanup_media(acct, now)
         for post in self.store.due(now):
             result = self.publish(post, now)
             out[result] = out.get(result, 0) + 1
@@ -47,7 +60,7 @@ class Publisher:
     def publish(self, post: dict, now: datetime) -> str:
         acct = self.s.accounts.get(post["account"])
         pid = post["id"]
-        if acct is None or not acct.enabled or not acct.ig_user_id or post["account"] not in self.metas:
+        if acct is None or not self.ready(acct):
             return "skipped"  # account off or not set up: leave the post alone
         late = now - _when(post["post_at"])
         if post["status"] == "scheduled" and late > timedelta(hours=self.s.pub("late_limit_hours", 6)):
@@ -58,6 +71,8 @@ class Publisher:
             self._finish(post, "failed", last_error="did not pass the quality or caption check")
             self.alert(f"Blocked a post ({acct.handle})", f"Post {pid} had not passed QA/caption checks.")
             return "failed"
+        if acct.publish_via == "make":
+            return self._via_make(post, acct, now)
         meta = self.metas[post["account"]]
         try:
             media_id = self._instagram(meta, acct, post)
@@ -80,6 +95,45 @@ class Publisher:
             except http.HttpError as e:
                 print(f"media delete failed for post {pid}: {e}")
         return "posted"
+
+    # -- the Make.com route ----------------------------------------------------------------------------------
+    def _via_make(self, post: dict, acct, now: datetime) -> str:
+        urls = self._urls(post)
+        payload = {"post_id": post["id"], "account": acct.name, "handle": acct.handle, "kind": post["kind"],
+                   "caption": post["caption"], "media_url": urls[0] if urls else "", "media_urls": urls,
+                   "is_ai": bool(post.get("is_ai")), "collaborators": post.get("collaborators") or [],
+                   "to_facebook": bool(post.get("to_facebook", True)) and acct.facebook_reels, "sample": False}
+        try:
+            reply = self.hooks[acct.name].post(payload)
+        except http.HttpError as e:
+            if e.status == 0:  # no answer: Make may or may not have posted, so never retry on our own
+                msg = http.scrub(str(e))[:500]
+                self._finish(post, "failed", last_error=f"no answer from Make: {msg}")
+                self.alert(f"Check Instagram ({acct.handle})", f"Make did not answer for post {post['id']}; it may "
+                           "or may not have posted. Check the page; re-add it if it's missing.", priority="high")
+                return "failed"
+            return self._attempt_failed(post, acct, e)
+        except MakeError as e:
+            return self._attempt_failed(post, acct, e)
+        self.store.log(post["id"], "sent_to_make", {"reply": {k: str(v)[:200] for k, v in reply.items()}})
+        # Media stays up a while: Make may still be fetching it (cleanup_media removes it later).
+        self._finish(post, "posted", posted_at=now.isoformat(), last_error=None,
+                     ig_media_id=str(reply["id"]) if reply.get("id") else None, permalink=reply.get("permalink"))
+        return "posted"
+
+    def cleanup_media(self, acct, now: datetime, after_hours: int = 48) -> int:
+        """Delete the files of posts that went out through Make over `after_hours` ago."""
+        if not self.s.delete_media_after_post:
+            return 0
+        done = 0
+        for p in self.store.posted_with_media(acct.name, now - timedelta(hours=after_hours), now - timedelta(days=30)):
+            try:
+                self.store.delete_media([m["path"] for m in p["media"]])
+                self.store.update_post(p["id"], media=[])
+                done += 1
+            except http.HttpError as e:
+                print(f"media delete failed for post {p['id']}: {e}")
+        return done
 
     # -- Instagram steps -------------------------------------------------------------------------------------
     def _urls(self, post: dict) -> list[str]:

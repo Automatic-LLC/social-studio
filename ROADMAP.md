@@ -42,6 +42,12 @@ where the build stands. Update it whenever something changes.
 - **AI label: fine.** Every AI post carries it (`is_ai`), and Aaron thinks it may even draw clicks.
 - Supabase: Social Studio gets its **own** project. The project connected to Claude belongs to another business.
 
+- **Make.com route (2026-10-29):** Meta's developer sign-up text never arrived for Aaron and Meta support didn't
+  answer, so an account can set `publish_via: make`: the publisher sends each due post to a Make.com webhook
+  (`social_studio/make.py`) and Make posts it with its Meta-approved Instagram modules. One try per run (no retry
+  on a timeout, so nothing posts twice); media is deleted 48 h after posting. The Meta app route stays for when
+  the phone check works (needed for `profile` stats and the AI label parameter).
+
 ## Phases
 
 1. **Foundation**: Meta app + system-user token, Supabase project, site with privacy and data-deletion pages,

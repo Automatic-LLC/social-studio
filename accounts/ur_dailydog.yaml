@@ -8,6 +8,7 @@ timezone: America/Chicago
 ig_user_id: ""
 fb_page_id: ""
 token_env: META_TOKEN       # which secret holds this account's token
+publish_via: meta           # meta: our own Meta app (needs META_TOKEN); make: a Make.com scenario (MAKE_WEBHOOK_URL)
 
 # Every Reel also goes to the Facebook Page as a Facebook Reel.
 facebook_reels: true
