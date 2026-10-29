@@ -45,10 +45,13 @@ def _account(s, name):
 
 def cmd_doctor(s, a):
     ok = True
+    why = {"META_TOKEN": "needed to post (SETUP.md step 6)", "SUPABASE_URL": "needed: the post queue",
+           "SUPABASE_KEY": "needed: the post queue", "NTFY_TOPIC": "optional: phone alerts",
+           "PEXELS_KEY": "optional: only for stock clips"}
     for name in config.SECRET_NAMES:
         have = bool(config.secret(name))
         ok &= have or name in ("NTFY_TOPIC", "PEXELS_KEY")
-        print(f"  {'OK ' if have else '-- '} {name} {'set' if have else 'NOT SET'}")
+        print(f"  {'OK ' if have else '-- '} {name} {'set' if have else 'not set yet: ' + why[name]}")
     token = config.secret("META_TOKEN")
     if token:
         try:
@@ -76,7 +79,7 @@ def cmd_doctor(s, a):
         except http.HttpError as e:
             ok = False
             print(f"  ERR Supabase: {e} (did you run supabase/migrations/001_init.sql?)")
-    print("all good" if ok else "fix the items above (SETUP.md)")
+    print("all good" if ok else "not ready to post yet: see the 'needed' lines above (SETUP.md)")
     return 0 if ok else 1
 
 
