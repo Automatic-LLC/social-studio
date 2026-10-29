@@ -31,7 +31,6 @@ New repository secret:
 - [ ] `SUPABASE_URL`
 - [ ] `SUPABASE_KEY`
 - [ ] `NTFY_TOPIC` (your ntfy topic name)
-- [ ] `PEXELS_KEY` (after step 4)
 - [ ] Don't add `PUBLISHER_ON` yet (step 7).
 
 ## 3. Each PC: install with one double-click (10 min per PC) — now, on both PCs
@@ -56,9 +55,14 @@ Later, to add a value to `.env` (like `META_TOKEN` tonight): open `C:\SocialStud
 **Commands** (steps 7 and 8): in `C:\SocialStudio`, click the folder's address bar, type `cmd`, press Enter. A black
 window opens already in the right folder; paste the command there.
 
-## 4. Pexels key (2 min) — now
+## 4. Stock clips from Pexels (optional, no key needed)
 
-- [ ] pexels.com/api → sign up → copy the API key → `.env` on both PCs as `PEXELS_KEY=...`, and the GitHub secret.
+Pexels paused new API keys (Oct 2026), so skip `PEXELS_KEY`. To use a stock clip:
+
+- [ ] On pexels.com/videos find a dog clip → **Free download** → save it in the week's folder (e.g.
+      `G:\My Drive\SocialStudio\week1\`). Note the creator's name shown on the clip's page.
+- [ ] In the plan, give it `source: pexels` and `credit: "<creator's name>"` (see `plans/example.yaml`). The batch puts
+      "Video: <name> / Pexels" on screen and "Video by <name> on Pexels" in the caption.
 
 ## 5. Content to start with — anytime
 

@@ -92,3 +92,14 @@ def test_wrong_account(settings, store, tmp_path):
     p.write_text("account: someone_else\nitems: []\n")
     with pytest.raises(PlanError):
         Batch(settings, store, settings.accounts["ur_dailydog"], p, tmp_path)
+
+
+def test_hand_downloaded_pexels_clip_is_credited(settings, store, now, tmp_path):
+    acct = settings.accounts["ur_dailydog"]
+    plan = write_plan(tmp_path, [{"clip": "clips/a.mp4", "source": "pexels", "credit": "Jane Doe", "caption": GOOD}])
+    renders, fx = fakes()
+    entries = Batch(settings, store, acct, plan, tmp_path / "out", **fx).build()
+    assert entries[0]["caption"].endswith("Video by Jane Doe on Pexels") and entries[0]["source"] == "pexels"
+    assert renders[0].credit == "Video: Jane Doe / Pexels"
+    bad = {"items": [{"clip": "clips/a.mp4", "source": "pexels", "caption": GOOD}]}
+    assert any("Pexels clip needs credit" in p for p in check_plan(bad, acct, tmp_path))

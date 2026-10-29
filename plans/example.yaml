@@ -7,7 +7,10 @@ items:
     caption: "Corgi zoomies at 6am, every single day 😂 Does yours do this?"
     hashtags: zoomies
 
-  - pexels: "golden retriever puppy running"
+  # A clip downloaded by hand from pexels.com/videos (free, no key needed): give the creator's name.
+  - clip: clips/pexels-golden.mp4
+    source: pexels
+    credit: "Jane Doe"
     text: "Me when someone says my name in a different room"
     caption: "Golden retriever puppy hearing his name, zero thoughts just vibes 🐕 What would yours do?"
     hashtags: general

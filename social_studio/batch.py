@@ -11,7 +11,7 @@ Plan file (paths are relative to the plan file):
         text: "POV: you whispered 'walk' from 3 rooms away"
         caption: "Corgi zoomies at 6am, every single day 😂 Does yours do this?"
         hashtags: zoomies                   # a set name from accounts/<name>.yaml, or a list
-        source: own                         # own | submission (then give credit: "@owner")
+        source: own                         # own | submission (credit: "@owner") | pexels (credit: "Jane Doe")
       - pexels: "golden retriever running"  # a stock clip; credited in the caption and on screen
         text: "Me leaving the house vs me hearing my name"
         caption: "Golden retriever logic, zero thoughts just vibes 🐕 What would yours do?"
@@ -71,6 +71,8 @@ def check_plan(plan: dict, acct, plan_dir: Path) -> list[str]:
                 problems.append(f"{where}: no file {it[f]}")
         if it.get("source") == "submission" and not it.get("credit"):
             problems.append(f"{where}: a submission needs credit: \"@owner\"")
+        if it.get("clip") and it.get("source") == "pexels" and not it.get("credit"):
+            problems.append(f"{where}: a Pexels clip needs credit: \"<the creator's name on Pexels>\"")
         try:
             cap = captions.build(it.get("caption", ""), _tags(it, acct))
         except PlanError as e:
@@ -138,8 +140,11 @@ class Batch:
                 on_screen = f"Video: {hit['user']} / Pexels"
             else:
                 clip = self.plan_dir / it["clip"]
+                if it.get("source") == "pexels":  # downloaded by hand from pexels.com
+                    credit = f"Video by {it['credit']} on Pexels"
+                    on_screen = f"Video: {it['credit']} / Pexels"
             caption = captions.build(it["caption"], _tags(it, self.acct))
-            if it.get("pexels"):
+            if it.get("pexels") or it.get("source") == "pexels":
                 caption += f"\n{credit}"
             out = self.out / f"{key}.mp4"
             if not out.is_file():

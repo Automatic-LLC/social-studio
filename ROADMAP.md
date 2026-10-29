@@ -11,6 +11,8 @@ where the build stands. Update it whenever something changes.
 - **Phase 2 (publisher): core done** (GitHub Actions every 15 min, Instagram image/carousel/Reel/Story, Facebook
   Reels, reserve fills empty slots, phone alerts, daily queue check). Still to build: the batch preview page with
   Kill/Swap buttons (today: `py -m social_studio kill <id>`). Done when a queued post goes out with the laptop shut.
+- Pexels paused new API keys (Oct 2026): stock clips are downloaded by hand (`source: pexels`, `credit:`); the
+  `pexels:` search in plans works only if a key is ever available.
 - **Phase 3 (content, no GPU): Reel maker in** (`social_studio/edit/reels.py`: 9:16, meme text on top, credit,
   end card, voiceover and music mixing; `sources/pexels.py`; `batch.py`: plan file → renders → `preview.html` →
   `--go` queues into free daily slots, extras to the reserve). Still to build: caption drafting by an LLM,
