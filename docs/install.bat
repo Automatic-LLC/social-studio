@@ -5,10 +5,12 @@ setlocal
 title Social Studio installer
 set "DIR=C:\SocialStudio"
 set "REPO=https://github.com/Automatic-LLC/social-studio.git"
-set "NEED_RESTART="
+REM Where winget and the usual installers put these programs, so they are found without opening a new window.
+set "PATH=%ProgramFiles%\Git\cmd;%LOCALAPPDATA%\Programs\Python\Launcher;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH%"
 
 echo.
 echo === Social Studio installer ===
+echo This window stays open until you press a key, so you can read what happened.
 echo.
 
 where winget >nul 2>nul
@@ -16,40 +18,34 @@ if errorlevel 1 goto :nowinget
 
 where py >nul 2>nul
 if not errorlevel 1 goto :havepy
-echo Installing Python...
+echo [1/3] Installing Python...
 winget install -e --id Python.Python.3.12 --scope user --accept-source-agreements --accept-package-agreements
-set "NEED_RESTART=1"
 :havepy
-
 where git >nul 2>nul
 if not errorlevel 1 goto :havegit
-echo Installing Git...
+echo [2/3] Installing Git...
 winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements
-set "NEED_RESTART=1"
 :havegit
-
 where ffmpeg >nul 2>nul
 if not errorlevel 1 goto :haveffmpeg
-echo Installing ffmpeg (the video tool)...
+echo [3/3] Installing ffmpeg (the video tool)...
 winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
-set "NEED_RESTART=1"
 :haveffmpeg
 
-if not defined NEED_RESTART goto :tools_ok
-echo.
-echo New programs were installed. Windows only sees them in a new window:
-echo CLOSE this window and DOUBLE-CLICK install.bat AGAIN to finish.
-echo.
-pause
-exit /b 0
+where py >nul 2>nul
+if errorlevel 1 goto :restart
+where git >nul 2>nul
+if errorlevel 1 goto :restart
+echo OK: Python and Git are ready.
 
-:tools_ok
 if exist "%DIR%\.git" goto :update
+echo.
 echo Getting the code into %DIR% ...
 git clone %REPO% "%DIR%"
 if errorlevel 1 goto :fail
 goto :code_ok
 :update
+echo.
 echo Getting the newest code...
 cd /d "%DIR%"
 git checkout main
@@ -57,6 +53,7 @@ git pull origin main
 :code_ok
 
 cd /d "%DIR%"
+echo.
 echo Installing the Python parts...
 py -m pip install --upgrade pip
 py -m pip install -r requirements.txt
@@ -74,9 +71,18 @@ start /wait notepad "%DIR%\.env"
 echo.
 echo === Checking the setup ===
 py -m social_studio doctor
+where ffmpeg >nul 2>nul
+if errorlevel 1 echo Note: ffmpeg is not found yet. Posting works without it; Reels need it. Run install.bat again later.
 echo.
-echo Done. From now on: double-click pull.bat in %DIR% to update, and use the commands in SETUP.md.
+echo Done. Your files are in %DIR%. Double-click pull.bat there to update.
 start "" explorer "%DIR%"
+pause
+exit /b 0
+
+:restart
+echo.
+echo Python or Git was just installed, and Windows needs a new window to see it.
+echo CLOSE this window and DOUBLE-CLICK install.bat AGAIN to finish.
 pause
 exit /b 0
 
